@@ -72,7 +72,12 @@ Function ConvertTo-ValidFileName {
 
         $FileNameCharArray = @(
             ForEach ($Character in "$BaseName$Extension".ToCharArray()) {
-                $ReplacementCharacters[$Character] ?? $Character
+                If ($ReplacementCharacters.ContainsKey($Character)) {
+                    $ReplacementCharacters[$Character]
+                }
+                Else {
+                    $Character
+                }
             }
         )
         If ($FileNameCharArray[-1] -eq '.') {
