@@ -6,7 +6,7 @@ Function ConvertTo-ValidFileName {
         [Alias('Input','InputString','Text','InputText','FileName','FullName','LiteralPath','Path','BaseName','Extension')]
         [String]$String,
 
-        [Switch]$IsPath, # Do not replace backslashes
+        [Switch]$IsPath,
 
         [Switch]$TrimStart,
 
@@ -26,7 +26,7 @@ Function ConvertTo-ValidFileName {
             [Char]'<' = '﹤';
             [Char]'>' = '﹥';
             [Char]'?' = '？';
-            [Char]'|' = '｜'
+            [Char]'|' = '｜';
         }
     }
 
@@ -79,6 +79,26 @@ Function ConvertTo-ValidFileName {
             $FileNameCharArray[-1] = '．'
         }
 
-        [String]::New($FileNameCharArray)
+        $FileName = [String]::New($FileNameCharArray)
+
+        $Components = $FileName.Split('\')
+        @(
+            For ($Index = 0; $Index -lt $Components.Count; $Index ++) {
+                $Component = $Components[$Index]
+                If ($Component.Length -le 255) {
+                    $Component
+                }
+                Else {
+                    If (($Index -eq $Components.Count -1) -and ($Null -ne $Extension)) {
+                        $ComponentExt = $Component.Substring($Component.LastIndexOf('.'))
+                        $ComponentBase = $Component.Substring(0, (254 - $ComponentExt.Length)).PadRight(255 - $ComponentExt.Length,'…')
+                        "$ComponentBase$ComponentExt"
+                    }
+                    Else {
+                        $Component.Substring(0,254).PadRight(255,'…')
+                    }
+                }
+            }
+        ) -join '\'
     }
 }
